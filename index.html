@@ -3,30 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel Admin - Chat Casino (Realtime DB)</title>
+  <title>Panel Admin - CRM Chat Casino</title>
   <link rel="stylesheet" href="admin.css" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <div id="users">
-    <strong>Usuarios conectados</strong>
-    <div id="usersList"></div>
-  </div>
+  <div id="container">
+    <aside id="users">
+      <h2>👥 Usuarios</h2>
+      <div id="usersList"></div>
+    </aside>
 
-  <div id="chatArea">
-    <div id="chatHeader">Seleccioná un usuario</div>
-    <div id="messages"></div>
-    <form id="replyForm">
-      <textarea id="replyInput" placeholder="Escribí tu respuesta..." autocomplete="off" rows="4"></textarea>
-  <button id="sendBtn" type="submit">Enviar</button>
-    </form>
+    <main id="chatArea">
+      <header id="chatHeader">💬 Seleccioná un usuario</header>
+      <section id="messages"></section>
+      <form id="replyForm">
+        <textarea id="replyInput" placeholder="Escribí tu respuesta..." autocomplete="off" rows="4"></textarea>
+        <button id="sendBtn" type="submit">Enviar</button>
+      </form>
+    </main>
   </div>
 
   <script src="admin.js"></script>
 </body>
 </html>
+
 
 
 
