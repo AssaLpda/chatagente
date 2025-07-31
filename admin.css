@@ -50,6 +50,7 @@ body {
   border-radius: 15px;
   font-size: 0.9rem;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 .user-msg {
   background: #d1ffd6;
@@ -76,6 +77,10 @@ body {
   font-size: 1rem;
   border-radius: 6px;
   border: 1px solid #ccc;
+  resize: vertical;   /* para que puedas ajustar la altura si querés */
+  min-height: 80px;   /* altura mínima */
+  font-family: inherit;
+  white-space: pre-wrap; /* para respetar espacios y saltos si acaso */
 }
 #sendBtn {
   padding: 8px 16px;
