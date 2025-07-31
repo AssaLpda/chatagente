@@ -16,7 +16,7 @@ const messagesDiv = document.getElementById("messages");
 const replyForm = document.getElementById("replyForm");
 const replyInput = document.getElementById("replyInput");
 
-// Cloudinary
+// Cloudinary (no usado acá, pero lo tenés definido)
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dwrfndfzs/upload';
 const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
@@ -43,7 +43,6 @@ function cargarUsuarios() {
         mensajes.forEach((msgSnap) => {
           const msg = msgSnap.val();
 
-          // Aquí se cambió para que cuente también tipo "archivo"
           if (msg.tipo === "user" || msg.tipo === "archivo") {
             if (!primerTimestamp || msg.timestamp < primerTimestamp) {
               primerTimestamp = msg.timestamp;
@@ -57,8 +56,6 @@ function cargarUsuarios() {
           }
         });
       }
-
-      console.log(`Usuario ${userId} (${nombre}): mensajes sin leer = ${sinLeer}`); // DEBUG
 
       usuarios.push({ userId, nombre, sinLeer, ultimoTimestamp });
     });
@@ -99,13 +96,12 @@ function seleccionarUsuario(userId, nombre) {
   replyInput.value = "";
   replyInput.focus();
 
-  // Aquí también se cambia para marcar como leídos ambos tipos
+  // Marcar mensajes como leídos
   db.ref(`chats/${userId}/mensajes`).once("value", (snapshot) => {
     snapshot.forEach((msgSnap) => {
       const msg = msgSnap.val();
       if ((msg.tipo === "user" || msg.tipo === "archivo") && !msg.leido) {
         msgSnap.ref.update({ leido: true });
-        console.log(`Mensaje marcado como leído:`, msg);
       }
     });
   });
@@ -115,38 +111,39 @@ function seleccionarUsuario(userId, nombre) {
   mensajesRef = db.ref(`chats/${userId}/mensajes`);
   mensajesRef.on("child_added", (snapshot) => {
     const msg = snapshot.val();
-    console.log("Nuevo mensaje recibido en admin:", msg); // DEBUG
 
     const div = document.createElement("div");
     div.className = "message " + (msg.tipo === "user" ? "user-msg" : "admin-msg");
 
     const contenido = document.createElement("div");
 
-    if (msg.tipo === "archivo") {
-      if (msg.mensaje.match(/\.(jpeg|jpg|gif|png|svg|webp)$/i)) {
-        const link = document.createElement("a");
-        link.href = msg.mensaje;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
+    // Detectar si el mensaje es una URL de imagen válida
+    const esURLImagen = typeof msg.mensaje === "string" && /\.(jpeg|jpg|gif|png|svg|webp)$/i.test(msg.mensaje);
 
-        const img = document.createElement("img");
-        img.src = msg.mensaje;
-        img.alt = "Imagen enviada";
-        img.style.maxWidth = "200px";
-        img.style.borderRadius = "8px";
+    if (msg.tipo === "archivo" || (msg.tipo === "user" && esURLImagen)) {
+      const link = document.createElement("a");
+      link.href = msg.mensaje;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
 
-        link.appendChild(img);
-        contenido.appendChild(link);
-      } else {
-        const link = document.createElement("a");
-        link.href = msg.mensaje;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = "📎 Ver archivo adjunto";
-        link.style.color = "#0066cc";
-        link.style.textDecoration = "underline";
-        contenido.appendChild(link);
-      }
+      const img = document.createElement("img");
+      img.src = msg.mensaje;
+      img.alt = "Imagen enviada";
+      img.style.maxWidth = "200px";
+      img.style.borderRadius = "8px";
+      img.style.cursor = "pointer";
+
+      link.appendChild(img);
+      contenido.appendChild(link);
+    } else if (msg.tipo === "archivo") {
+      const link = document.createElement("a");
+      link.href = msg.mensaje;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "📎 Ver archivo adjunto";
+      link.style.color = "#0066cc";
+      link.style.textDecoration = "underline";
+      contenido.appendChild(link);
     } else {
       const partes = msg.mensaje.split("\n");
       partes.forEach((parte, i) => {
@@ -168,9 +165,8 @@ function seleccionarUsuario(userId, nombre) {
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-    // 🔔 Notificación (solo si no lo enviaste vos)
+    // Sonido de notificación para mensajes del usuario o archivo
     if (msg.tipo === "user" || msg.tipo === "archivo") {
-      console.log("Reproduciendo notificación para mensaje tipo:", msg.tipo);
       notificacionAudio.play().catch(() => {});
     }
   });
