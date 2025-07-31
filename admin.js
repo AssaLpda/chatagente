@@ -18,10 +18,13 @@ const replyInput = document.getElementById("replyInput");
 
 // Cloudinary
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dwrfndfzs/upload';
-const CLOUDINARY_UPLOAD_PRESET = 'ml_default'; // Asegurate que esté activo
+const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
 let currentUserId = null;
 let mensajesRef = null;
+
+// Sonido de notificación
+const notificacionAudio = new Audio("https://notificationsounds.com/notification-sounds/event-538/download/mp3");
 
 function cargarUsuarios() {
   db.ref("chats").on("value", (snapshot) => {
@@ -40,7 +43,8 @@ function cargarUsuarios() {
         mensajes.forEach((msgSnap) => {
           const msg = msgSnap.val();
 
-          if (msg.tipo === "user") {
+          // Aquí se cambió para que cuente también tipo "archivo"
+          if (msg.tipo === "user" || msg.tipo === "archivo") {
             if (!primerTimestamp || msg.timestamp < primerTimestamp) {
               primerTimestamp = msg.timestamp;
               if (msg.nombre) nombre = msg.nombre;
@@ -54,12 +58,9 @@ function cargarUsuarios() {
         });
       }
 
-      usuarios.push({
-        userId,
-        nombre,
-        sinLeer,
-        ultimoTimestamp,
-      });
+      console.log(`Usuario ${userId} (${nombre}): mensajes sin leer = ${sinLeer}`); // DEBUG
+
+      usuarios.push({ userId, nombre, sinLeer, ultimoTimestamp });
     });
 
     usuarios.sort((a, b) => {
@@ -80,7 +81,7 @@ function cargarUsuarios() {
       const div = document.createElement("div");
       const label =
         usuario.sinLeer > 0
-          ? ` (${usuario.sinLeer} mensaje${usuario.sinLeer > 1 ? "s" : ""})`
+          ? ` (${usuario.sinLeer} mensaje${usuario.sinLeer > 1 ? "s" : ""} sin leer)`
           : "";
       div.textContent = `${usuario.nombre}${label}`;
       div.className = "user-item";
@@ -98,29 +99,31 @@ function seleccionarUsuario(userId, nombre) {
   replyInput.value = "";
   replyInput.focus();
 
-  db.ref(`chats/${userId}/mensajes`)
-    .once("value", (snapshot) => {
-      snapshot.forEach((msgSnap) => {
-        const msg = msgSnap.val();
-        if (msg.tipo === "user" && !msg.leido) {
-          msgSnap.ref.update({ leido: true });
-        }
-      });
-    })
-    .catch(console.error);
+  // Aquí también se cambia para marcar como leídos ambos tipos
+  db.ref(`chats/${userId}/mensajes`).once("value", (snapshot) => {
+    snapshot.forEach((msgSnap) => {
+      const msg = msgSnap.val();
+      if ((msg.tipo === "user" || msg.tipo === "archivo") && !msg.leido) {
+        msgSnap.ref.update({ leido: true });
+        console.log(`Mensaje marcado como leído:`, msg);
+      }
+    });
+  });
 
   if (mensajesRef) mensajesRef.off();
 
   mensajesRef = db.ref(`chats/${userId}/mensajes`);
   mensajesRef.on("child_added", (snapshot) => {
     const msg = snapshot.val();
+    console.log("Nuevo mensaje recibido en admin:", msg); // DEBUG
+
     const div = document.createElement("div");
     div.className = "message " + (msg.tipo === "user" ? "user-msg" : "admin-msg");
 
     const contenido = document.createElement("div");
 
     if (msg.tipo === "archivo") {
-      if (msg.mensaje.match(/\.(jpeg|jpg|gif|png|svg)$/i)) {
+      if (msg.mensaje.match(/\.(jpeg|jpg|gif|png|svg|webp)$/i)) {
         const link = document.createElement("a");
         link.href = msg.mensaje;
         link.target = "_blank";
@@ -164,6 +167,12 @@ function seleccionarUsuario(userId, nombre) {
     div.appendChild(tsDiv);
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // 🔔 Notificación (solo si no lo enviaste vos)
+    if (msg.tipo === "user" || msg.tipo === "archivo") {
+      console.log("Reproduciendo notificación para mensaje tipo:", msg.tipo);
+      notificacionAudio.play().catch(() => {});
+    }
   });
 }
 
@@ -171,17 +180,18 @@ replyForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const texto = replyInput.value.trim();
   if (!texto || !currentUserId) return;
+
   db.ref(`chats/${currentUserId}/mensajes`).push({
     nombre: "Admin",
     mensaje: texto,
     tipo: "admin",
     timestamp: Date.now(),
   });
+
   replyInput.value = "";
 });
 
 cargarUsuarios();
-
 
 
 
