@@ -1,96 +1,150 @@
+* {
+  box-sizing: border-box;
+}
 body {
-  font-family: Arial, sans-serif;
-  margin: 0; padding: 0;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f9;
+  color: #333;
+}
+
+#container {
   display: flex;
   height: 100vh;
-  background: #f0f0f0;
 }
+
+/* Sidebar de usuarios */
 #users {
-  width: 220px;
-  background: white;
-  border-right: 1px solid #ccc;
+  width: 260px;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  padding: 20px;
   overflow-y: auto;
-  padding: 10px;
 }
+
+#users h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
 .user-item {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #f0f0f0;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
+
 .user-item:hover {
-  background: #dcedc8;
+  background: #cce5ff;
 }
+
+/* Área del chat */
 #chatArea {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: white;
-  padding: 10px;
+  background: #fff;
+  padding: 20px;
 }
+
 #chatHeader {
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 15px;
   padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
 }
+
 #messages {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
-  background: #ececec;
-  border-radius: 6px;
-  margin-bottom: 10px;
+  padding-right: 10px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
 }
+
+/* Mensajes */
 .message {
-  margin-bottom: 8px;
   max-width: 70%;
-  padding: 8px 12px;
-  border-radius: 15px;
-  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 18px;
+  line-height: 1.4;
+  font-size: 0.95rem;
   word-wrap: break-word;
   white-space: pre-wrap;
+  position: relative;
 }
+
 .user-msg {
-  background: #d1ffd6;
   align-self: flex-start;
+  background: #e2f7d4;
+  border: 1px solid #cdebb5;
 }
+
 .admin-msg {
-  background: #a8d0ff;
   align-self: flex-end;
+  background: #d1e7ff;
+  border: 1px solid #b0d4f1;
 }
+
 .timestamp {
   font-size: 0.7rem;
   color: #666;
   text-align: right;
-  margin-top: 2px;
+  margin-top: 4px;
 }
+
+/* Formulario de respuesta */
 #replyForm {
-  display: none;
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
+
 #replyInput {
   flex: 1;
-  padding: 8px;
+  padding: 10px;
   font-size: 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  resize: vertical;   /* para que puedas ajustar la altura si querés */
-  min-height: 80px;   /* altura mínima */
+  resize: vertical;
+  min-height: 70px;
   font-family: inherit;
-  white-space: pre-wrap; /* para respetar espacios y saltos si acaso */
 }
+
 #sendBtn {
-  padding: 8px 16px;
-  background: #075E54;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 10px 20px;
+  background: #007bff;
+  color: #fff;
   font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
+
 #sendBtn:hover {
-  background: #0b7b6c;
+  background: #0056b3;
 }
+
+/* Punto verde para usuario conectado */
+.online-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #4caf50;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+

@@ -16,6 +16,10 @@ const messagesDiv = document.getElementById("messages");
 const replyForm = document.getElementById("replyForm");
 const replyInput = document.getElementById("replyInput");
 
+// Cloudinary
+const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dwrfndfzs/upload';
+const CLOUDINARY_UPLOAD_PRESET = 'ml_default'; // Asegurate que esté activo
+
 let currentUserId = null;
 let mensajesRef = null;
 
@@ -42,7 +46,6 @@ function cargarUsuarios() {
               if (msg.nombre) nombre = msg.nombre;
             }
 
-            // Contar mensajes sin leer
             if (!msg.leido) sinLeer++;
             if (msg.timestamp > ultimoTimestamp) {
               ultimoTimestamp = msg.timestamp;
@@ -59,7 +62,6 @@ function cargarUsuarios() {
       });
     });
 
-    // Ordenar: primero los con más mensajes sin leer, luego por último mensaje
     usuarios.sort((a, b) => {
       if (b.sinLeer !== a.sinLeer) return b.sinLeer - a.sinLeer;
       return b.ultimoTimestamp - a.ultimoTimestamp;
@@ -96,7 +98,6 @@ function seleccionarUsuario(userId, nombre) {
   replyInput.value = "";
   replyInput.focus();
 
-  // Marcar mensajes como leídos
   db.ref(`chats/${userId}/mensajes`)
     .once("value", (snapshot) => {
       snapshot.forEach((msgSnap) => {
@@ -116,17 +117,42 @@ function seleccionarUsuario(userId, nombre) {
     const div = document.createElement("div");
     div.className = "message " + (msg.tipo === "user" ? "user-msg" : "admin-msg");
 
-    // Crear nodo texto con saltos de línea respetados
-    const mensajeContainer = document.createElement("div");
-    const partes = msg.mensaje.split("\n");
-    partes.forEach((parte, i) => {
-      mensajeContainer.appendChild(document.createTextNode(parte));
-      if (i < partes.length - 1) {
-        mensajeContainer.appendChild(document.createElement("br"));
-      }
-    });
+    const contenido = document.createElement("div");
 
-    div.appendChild(mensajeContainer);
+    if (msg.tipo === "archivo") {
+      if (msg.mensaje.match(/\.(jpeg|jpg|gif|png|svg)$/i)) {
+        const link = document.createElement("a");
+        link.href = msg.mensaje;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        const img = document.createElement("img");
+        img.src = msg.mensaje;
+        img.alt = "Imagen enviada";
+        img.style.maxWidth = "200px";
+        img.style.borderRadius = "8px";
+
+        link.appendChild(img);
+        contenido.appendChild(link);
+      } else {
+        const link = document.createElement("a");
+        link.href = msg.mensaje;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "📎 Ver archivo adjunto";
+        link.style.color = "#0066cc";
+        link.style.textDecoration = "underline";
+        contenido.appendChild(link);
+      }
+    } else {
+      const partes = msg.mensaje.split("\n");
+      partes.forEach((parte, i) => {
+        contenido.appendChild(document.createTextNode(parte));
+        if (i < partes.length - 1) contenido.appendChild(document.createElement("br"));
+      });
+    }
+
+    div.appendChild(contenido);
 
     const tsDiv = document.createElement("div");
     tsDiv.className = "timestamp";
@@ -136,7 +162,6 @@ function seleccionarUsuario(userId, nombre) {
     });
 
     div.appendChild(tsDiv);
-
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
@@ -156,6 +181,9 @@ replyForm.addEventListener("submit", (e) => {
 });
 
 cargarUsuarios();
+
+
+
 
 
 
